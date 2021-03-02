@@ -4,7 +4,7 @@ use std::time::Duration;
 use actix_web::client::Client;
 use actix_web::http::header::{HOST, USER_AGENT};
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
-use clap::{value_t, Arg};
+use clap::Arg;
 use url::Url;
 
 const VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
@@ -52,29 +52,21 @@ async fn main() -> std::io::Result<()> {
         .arg(
             Arg::with_name("listen_addr")
                 .takes_value(true)
-                .value_name("LISTEN ADDR")
+                .value_name("LISTEN ADDR:PORT")
                 .index(1)
-                .required(true),
-        )
-        .arg(
-            Arg::with_name("listen_port")
-                .takes_value(true)
-                .value_name("LISTEN PORT")
-                .index(2)
                 .required(true),
         )
         .arg(
             Arg::with_name("bucket")
                 .takes_value(true)
                 .value_name("BUCKET")
-                .index(3)
+                .index(2)
                 .required(true),
         )
         .get_matches();
 
-    let listen_addr = matches.value_of("listen_addr").unwrap();
+    let listen_addr = matches.value_of("listen_addr").unwrap().to_string();
     let bucket = matches.value_of("bucket").unwrap().to_string();
-    let listen_port = value_t!(matches, "listen_port", u16).unwrap_or_else(|e| e.exit());
 
     HttpServer::new(move || {
         App::new()
@@ -83,7 +75,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .default_service(web::route().to(forward))
     })
-    .bind((listen_addr, listen_port))?
+    .bind(listen_addr)?
     .system_exit()
     .run()
     .await

@@ -8,5 +8,5 @@ because I need to implement some things including but not limited to what listed
 
 ## Running
 ```
-cargo run <listener address> <listener port> <bucket name>
+cargo run <listener address:port> <bucket name>
 ```
