@@ -5,6 +5,7 @@ because I need to implement some things including but not limited to what listed
 ## To-do
 - Add a file listing endpoint
 - Add an upload, edit, delete endpoint
+- Make use of the official API
 
 ## Running
 ```
