@@ -27,10 +27,8 @@ async fn forward(
 
     let mut url = Url::parse("http://storage.googleapis.com").unwrap();
     url.set_path(&format!("/{}{}", bucket, path));
-    url.set_query(req.uri().query());
 
     let host = req.connection_info().host().to_string();
-
     let res = client
         .request_from(url.as_str(), req.head())
         .no_decompress()
@@ -45,15 +43,17 @@ async fn forward(
         .map_err(Error::from)?;
 
     let status = res.status();
+
     if [403, 404].contains(&status.as_u16()) {
         return Ok(list_files(
             host,
             bucket,
-            path.trim_matches('/').to_string(),
+            path.trim_start_matches('/').to_string(),
             session,
             auth.get_ref(),
         ));
     }
+
     let mut client_resp = HttpResponse::build(status);
     // Remove `Connection` as per
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Connection#Directives
@@ -121,9 +121,10 @@ fn sizeof_fmt(mut num: u64, suffix: Option<&str>) -> String {
     return format!("{:.1}{}{}", num, "Yi", suffix);
 }
 
-// Still finding a way on how to run this in tokio reactor
-// So in the meantime, I'll keep this synchronous
-// Slap me with PRs T_T
+// Still finding a way on how to run this in tokio v1.x reactor
+// since apparently actix-web runs in tokio v0.2.
+// So in the meantime, I'll keep this synchronous.
+// Or I missed something, slap me with PRs T_T.
 fn list_files(
     host: String,
     bucket: &String,
@@ -197,7 +198,7 @@ fn list_files(
                 sizeof_fmt(item.size, None)
             ))
         }
-        for prefix in object.prefixes.iter().filter(|p| *p != "/") {
+        for prefix in object.prefixes.iter().filter(|p| *p != "/" && *p != &path) {
             prefixes.push(format!(
                 r#"<tr><td><a href="http://{0}/{1}">{1}</a></td></tr>"#,
                 host, prefix
