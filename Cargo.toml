@@ -5,8 +5,13 @@ authors = ["norinorin <norizontunes@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-actix-web = { version = "3", features = ["openssl"] }
+actix-web = { version = "3", features = ["openssl", "secure-cookies"] }
+actix-session = "*"
+dotenv = "*"
 clap = "2.33"
 url = "2.0"
 openssl = { version = "0.10", features = ["vendored"] }
 env_logger = "0.8"
+cloud-storage = { version = "0.8", features = ["sync"] }
+futures-util = "*"
+itertools = "*"
